@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>My webpage</title>
+    </head>
+    <body>
+        <h1>Frida Trepca- KU Leuven- r0730756</h1> 
+                
+        <a href="Home.html">Home ;</a>
+        <a href="InteractionsOverview.html">Interactions Overview ;</a>
+        <a href="GeneOverview.html"> Gene Overview ;</a>
+<h2> Genes Overview</h2>
+<style>
+    svg {
+        border: 1px;
+        border-style: solid;
+    }
+    circle {
+        fill: steelblue;
+        opacity: 0.5;
+    }
+    circle:hover {
+        fill: red;
+    }
+</style>
+<svg id="my_plot" width="300px" height="300px">
+    <!-- This is empty! -->
+</svg>
+<script src="scatterplot.js"></script>
+<script>
+    let slider_value = 50;
+  
+    $: multiplied_value = slider_value * 2
+  </script>
+  
+  <input type="range" min="0" max="100" bind:value={slider_value} />
+  <p>The value {slider_value} multiplied by 2 is {multiplied_value}.</p>
+
+    </body>
+</html>
