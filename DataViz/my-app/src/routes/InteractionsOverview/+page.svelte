@@ -122,14 +122,43 @@ function redirectToInteractionDetails(interaction) {
   let genes = [];
   let interactions = [];
 
-  // Example: Fetch genes and interactions data using load()
-  load().then((data) => {
-    genes = data.props?.geneData; // Replace with actual gene data
-    interactions = data.props?.interactionData; // Replace with actual interaction data
-  });
+ async function fetchGeneInteractions(geneId) {
+    try {
+      const apiUrl = `https://api.string-db.org/v11/interactions/${geneId}`;
+      const response = await fetch(apiUrl);
 
+      if (!response.ok) {
+        throw new Error(`Failed to fetch gene interactions: ${response.status}`);
+      }
 
-  
+      const data = await response.json();
+
+      const interactions = data.interactions.map((interaction) => ({
+        geneName: interaction.target_genes[0].gene_info.name,
+        interactionType: interaction.info,
+      }));
+
+      return interactions;
+    } catch (error) {
+      console.error('Error fetching gene interactions:', error);
+      throw error;
+    }
+  }
+
+  // Function to fetch gene data using the load() function
+  async function fetchGeneData() {
+    try {
+      const data = await load(); // Fetch gene data using load()
+      return {
+        genes: data.props?.geneData || [],
+        interactions: data.props?.interactionData || [],
+      };
+    } catch (error) {
+      console.error('Error fetching gene data:', error);
+      throw error;
+    }
+  }
+
   // Calculate X and Y coordinates based on gene type
   function calculateX(gene) {
     const centerX = 300; // Center X-coordinate of the SVG
@@ -193,6 +222,20 @@ function redirectToInteractionDetails(interaction) {
     // Example: You can use Svelte's router to navigate to the details page
     // router.push(`/interaction-details/${interaction.id}`);
   }
+
+  // Use Svelte's onMount to fetch data when the component mounts
+  onMount(async () => {
+    try {
+      // Fetch gene data and interactions when the component mounts
+      const geneData = await fetchGeneData();
+      genes = geneData.genes;
+      interactions = geneData.interactions;
+
+      // Now, you have the gene data and interactions ready for rendering
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  });
 </script>
 
 <main>
