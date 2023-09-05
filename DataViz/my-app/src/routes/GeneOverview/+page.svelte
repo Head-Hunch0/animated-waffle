@@ -161,112 +161,25 @@
 
 
 
-<!-- <script>
-		import { load } from './+page.js';
-		// Define variables and import gene data if necessary
-		import { onMount } from 'svelte';
-		let genes = [load()]; // Replace with your actual gene data
-		// Import D3.js
-  		import * as d3 from 'd3';
-
-
-
-  // Set up D3 visualization
-  onMount(() => {
-    const svg = d3.select('svg');
-    const circleRadius = 250;
-    const centerX = 300; // Center X-coordinate of the circle
-    const centerY = 300; // Center Y-coordinate of the circle
-
-    // Create the circle representing the chromosome
-    svg
-      .append('circle')
-      .attr('cx', centerX)
-      .attr('cy', centerY)
-      .attr('r', circleRadius)
-      .style('fill', 'none')
-      .style('stroke', 'black');
-
-    // Create gene lines and ticks
-    const geneLines = svg.selectAll('.gene-line').data(genes).enter();
-
-    geneLines
-      .append('line')
-      .attr('x1', d => {
-        // Calculate X-coordinate based on gene_start
-        // Adjust for forward and reverse strands
-        return d.gene_strand === 'forward' ? centerX + circleRadius : centerX - circleRadius;
-      })
-      .attr('y1', centerY)
-      .attr('x2', centerX)
-      .attr('y2', centerY)
-      .attr('stroke', 'black')
-      .attr('opacity', 0.5);
-
-    // Add ticks along the chromosome
-    const numTicks = 10; // Number of ticks
-    const tickRadius = circleRadius + 10; // Distance from the circle
-    const tickAngle = (2 * Math.PI) / numTicks;
-
-    for (let i = 0; i < numTicks; i++) {
-      const angle = i * tickAngle;
-      const tickX1 = centerX + circleRadius * Math.cos(angle);
-      const tickY1 = centerY + circleRadius * Math.sin(angle);
-      const tickX2 = centerX + tickRadius * Math.cos(angle);
-      const tickY2 = centerY + tickRadius * Math.sin(angle);
-
-      svg
-        .append('line')
-        .attr('x1', tickX1)
-        .attr('y1', tickY1)
-        .attr('x2', tickX2)
-        .attr('y2', tickY2)
-        .attr('stroke', 'black')
-        .attr('opacity', 0.5);
-    }
-  });
-
-    let hoveredGene = null;
-
-  // Event handler for mouseover on a gene line
-  function handleMouseOver(gene) {
-    hoveredGene = gene;
-  }
-
-  // Event handler for mouseout from a gene line
-  function handleMouseOut() {
-    hoveredGene = null;
-  }
-</script>
-
-<main>
-  <h1>Your Name</h1>
-  <p>University: Your University</p>
-  <p>Student Number: Your Student Number</p>
-
-   SVG container for the chromosome visualization -->
-  <!-- <svg width="600" height="600"> -->
-    <!-- Chromosome visualization goes here -->
-  <!-- </svg> -->
-  
-  
-<!-- </main> -->
-
-
 <script>
   // Import necessary modules
   import {load} from './+page.js';
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
+	// import data from 'd3-selection/src/selection/data.js';
 
   // Define your gene data (replace this with your actual data)
-  let genes = [
+  let genes =
 	load()
-  ];
+;
 
   // console.log(genes);
   // Set up D3 visualization on mount
   onMount(() => {
+    genes.then((data) =>{
+      // console.log(data.props?.geneData);
+      const gene= data.props?.geneData
+    
     const svg = d3.select('svg');
     const circleRadius = 250;
     const centerX = 300; // Center X-coordinate of the circle
@@ -281,18 +194,41 @@
       .style('fill', 'none')
       .style('stroke', 'black');
 
-    // Create gene lines and ticks
-    const geneLines = svg.selectAll('.gene-line').data(genes).enter();
-geneLines
+            // Calculate the maximum and minimum values for gene_start and gene_stop
+      const minGeneStart = d3.min(gene, (d) => d.gene_start);
+      const maxGeneStop = d3.max(gene, (d) => d.gene_stop);
+
+      // Define scales for X and Y coordinates
+      const xScale = d3
+        .scaleLinear()
+        .domain([minGeneStart, maxGeneStop])
+        .range([0, 2 * Math.PI]); // Angle range for circular visualization
+
+      const yScale = d3
+        .scaleLinear()
+        .domain([0, 1]) // Assuming a range of [0, 1] for Y values
+        .range([0, circleRadius]);
+
+
+// Bind the data to the selection
+const geneLines = svg.selectAll('.gene-line').data(gene).enter();
+
+// Create lines for each gene
+const geneLinks = geneLines
+  .append('a')
+  .attr('xlink:href', (d) => `/gene/${d.gene_id}`) // Set the href to the gene details page URL
+  .attr('target', '_blank'); // Open in a new tab
+
+// Create lines for each gene within the anchor tags
+geneLinks
   .append('line')
-  .attr('x1', d => {
+  .attr('x1', (d) => {
     // Calculate X-coordinate based on gene_start
     // Adjust for forward and reverse strands
     return d.gene_strand === 'forward' ? centerX + circleRadius : centerX - circleRadius;
-    
   })
   .attr('y1', centerY)
-  .attr('x2', d => {
+  .attr('x2', (d) => {
     // Calculate X-coordinate for gene end
     return d.gene_strand === 'forward'
       ? centerX + circleRadius + (d.gene_stop - d.gene_start) // Adjust for gene length
@@ -300,11 +236,9 @@ geneLines
   })
   .attr('y2', centerY)
   .attr('stroke', 'black')
-  .attr('opacity', .5)
-  .on('mouseover', handleMouseOver) // Use event handler directly
-  .on('mouseout', handleMouseOut); // Use event handler directly
-
-
+  .attr('opacity', 0.5)
+  .on('mouseover', handleMouseOver)
+  .on('mouseout', handleMouseOut);
     // Add ticks along the chromosome
     const numTicks = 200; // Number of ticks
     const tickRadius = circleRadius + 13; // Distance from the circle
@@ -382,7 +316,7 @@ function calculateX(gene) {
 }
 
 // Other functions and event handlers remain the same
-
+})
   });
 
 
@@ -392,7 +326,7 @@ function calculateX(gene) {
 <main>
 
   <!-- SVG container for the chromosome visualization -->
-  <svg width="600" height="600" class="tooltip">
+  <svg width="600" height="600">
     <!-- Chromosome visualization goes here -->
 	
   </svg>
@@ -409,4 +343,10 @@ function calculateX(gene) {
     border-radius: 5px;
     font-size: 12px;
   }
+
+  a:hover {
+  background-color: lightgray; /* Change background color on hover */
+  color: darkblue; /* Change text color on hover */
+  text-decoration: underline; /* Add underline on hover */
+}
 </style>
