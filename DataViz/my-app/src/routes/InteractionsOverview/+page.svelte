@@ -258,7 +258,7 @@ function redirectToInteractionDetails(interaction) {
         y2={calculateY(interaction.to_gene)}
         stroke={interaction.lineColor || "rgba(0, 0, 0, 1)"}
         stroke-width={interaction.strokeWidth || 1}
-        on:mouseover={() => handleMouseOver(interaction)}
+        on:mouseover={() => handleMouseOver(interaction)} 
         on:click={() => redirectToInteractionDetails(interaction)}
         role="button"
         tabindex="0"  
@@ -272,3 +272,4 @@ function redirectToInteractionDetails(interaction) {
     {/each}
   </svg>
 </main>
+<!-- end of page -->
